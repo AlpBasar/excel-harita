@@ -7,7 +7,7 @@ import {
   Stack,
   Image, // Eğer bir görsel kullanmak isterseniz
 } from '@chakra-ui/react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar'; // Navbar bileşeninin doğru yolda olduğundan emin olun
 
 export default function Home() {
   return (
@@ -22,7 +22,7 @@ export default function Home() {
           mb={12}
         >
           <Heading as="h2" size="xl" mb={6}>
-            Google Harita Linklerinizi Kolayca Excel'e Dönüştürün!
+            Google Harita Linklerinizi Kolayca Excel&apos;e Dönüştürün!
           </Heading>
           <Text fontSize="lg" mb={8}>
             Zamandan tasarruf edin, verimliliğinizi artırın. Hemen kredi satın alın ve dönüştürmeye başlayın.
@@ -64,7 +64,7 @@ export default function Home() {
             </Box>
             <Box>
               <Heading as="h4" size="md" mb={2}>
-                4. Excel'e Dönüştürün
+                4. Excel&apos;e Dönüştürün
               </Heading>
               <Text fontSize="md" color="gray.300">
                 Tek bir tıklamayla linklerinizi Excel formatına çevirin.
