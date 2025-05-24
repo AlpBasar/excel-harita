@@ -1,3 +1,4 @@
+// pages/index.js
 import {
   Box,
   Heading,
@@ -5,34 +6,87 @@ import {
   Text,
   Container,
   Stack,
-  Image, // Eğer bir görsel kullanmak isterseniz
+  Flex, // Flex eklendi
+  Icon, // İkonlar için
 } from '@chakra-ui/react';
-import Navbar from '../components/Navbar'; // Navbar bileşeninin doğru yolda olduğundan emin olun
+import Navbar from '../components/Navbar';
+import { useSession } from 'next-auth/react'; // useSession'ı import et
+import NextLink from 'next/link'; // Next.js link bileşeni
+import { FiLogIn, FiUserPlus, FiTool } from 'react-icons/fi'; // Örnek ikonlar
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const isLoading = status === 'loading';
+
   return (
     <Box bg="gray.800" color="white" minH="100vh">
       <Navbar />
-      <Container maxW="container.md" py={20} textAlign="center">
-        {/* Reklam Bannerı (Yeni Stil) */}
+      <Container maxW="container.lg" py={10} textAlign="center">
+        {/* Reklam Bannerı (Mevcut Stiliniz) */}
         <Box
           bgGradient="linear(to-r, purple.600, blue.600)"
           borderRadius="md"
-          p={12}
+          p={{ base: 6, md: 12 }}
           mb={12}
         >
-          <Heading as="h2" size="xl" mb={6}>
+          <Heading as="h1" size={{ base: 'xl', md: '2xl' }} mb={6}> {/* Ana başlık h1 oldu */}
             Google Harita Linklerinizi Kolayca Excel&apos;e Dönüştürün!
           </Heading>
-          <Text fontSize="lg" mb={8}>
-            Zamandan tasarruf edin, verimliliğinizi artırın. Hemen kredi satın alın ve dönüştürmeye başlayın.
+          <Text fontSize={{ base: 'lg', md: 'xl' }} mb={8}>
+            Zamandan tasarruf edin, verimliliğinizi artırın. Google Haritalar&apos;daki işletme bilgilerini saniyeler içinde Excel formatına çevirin.
           </Text>
-          <Button colorScheme="teal" size="lg">
-            Hemen Dene!
-          </Button>
+          <Flex justifyContent="center" wrap="wrap">
+            {!isLoading && !session?.user && ( // Yüklenmiyorsa ve kullanıcı giriş yapmamışsa
+              <>
+                <NextLink href="#" passHref>
+                  <Button
+                    as="a"
+                    colorScheme="green"
+                    size="lg"
+                    mb={{ base: 2, md: 0 }}
+                    mr={{ base: 0, md: 4 }}
+                    leftIcon={<Icon as={FiUserPlus} />}
+                    onClick={() => {
+                        // Navbar'daki SignupModal'ı açmak için bir yol bulmamız gerekebilir
+                        // Şimdilik Navbar'daki butonu kullanmalarını varsayalım
+                        // Veya Navbar'dan onSignupOpen fonksiyonunu prop olarak alabiliriz.
+                        // Ya da doğrudan /auth/kayit gibi bir sayfaya yönlendirebiliriz (ileride)
+                        const signupButton = document.querySelector('#navbar-signup-button'); // Örnek ID, Navbar'a eklenmeli
+                        if (signupButton) signupButton.click();
+                        else alert("Kayıt olmak için lütfen Navbar'daki 'Kayıt Ol' butonunu kullanın.");
+                    }}
+                  >
+                    Hemen Kayıt Ol
+                  </Button>
+                </NextLink>
+                <NextLink href="#" passHref>
+                  <Button
+                    as="a"
+                    colorScheme="teal"
+                    size="lg"
+                    leftIcon={<Icon as={FiLogIn} />}
+                    onClick={() => {
+                        const loginButton = document.querySelector('#navbar-login-button'); // Örnek ID, Navbar'a eklenmeli
+                        if (loginButton) loginButton.click();
+                        else alert("Giriş yapmak için lütfen Navbar'daki 'Giriş Yap' butonunu kullanın.");
+                    }}
+                  >
+                    Giriş Yap
+                  </Button>
+                </NextLink>
+              </>
+            )}
+            {session?.user && ( // Kullanıcı giriş yapmışsa
+              <NextLink href="/app" passHref>
+                <Button as="a" colorScheme="teal" size="lg" leftIcon={<Icon as={FiTool} />}>
+                  Dönüştürme Aracına Git
+                </Button>
+              </NextLink>
+            )}
+          </Flex>
         </Box>
 
-        {/* Nasıl Yapılır Bölümü (Yeni Stil) */}
+        {/* Nasıl Yapılır Bölümü (Mevcut Stiliniz) */}
         <Box bg="gray.700" borderRadius="md" p={8}>
           <Heading as="h3" size="lg" mb={6}>
             Nasıl Çalışır?
@@ -40,26 +94,26 @@ export default function Home() {
           <Stack spacing={6}>
             <Box>
               <Heading as="h4" size="md" mb={2}>
-                1. Giriş Yapın veya Kaydolun
+                1. Kayıt Olun veya Giriş Yapın
               </Heading>
               <Text fontSize="md" color="gray.300">
-                Hesabınıza giriş yaparak veya yeni bir hesap oluşturarak başlayın.
+                Platformumuzu kullanmaya başlamak için ücretsiz bir hesap oluşturun veya mevcut hesabınızla giriş yapın.
               </Text>
             </Box>
             <Box>
               <Heading as="h4" size="md" mb={2}>
-                2. Bakiye Satın Alın
+                2. Kredi Satın Alın (Yakında)
               </Heading>
               <Text fontSize="md" color="gray.300">
-                Dönüştürme işlemleri için yeterli krediniz olduğundan emin olun.
+                Dönüştürme işlemleri için ihtiyacınız olan kredi paketini seçin.
               </Text>
             </Box>
             <Box>
               <Heading as="h4" size="md" mb={2}>
-                3. Linkleri Yapıştırın
+                3. Linki Yapıştırın
               </Heading>
               <Text fontSize="md" color="gray.300">
-                Dönüştürmek istediğiniz Google Harita linklerini girin.
+                Giriş yaptıktan sonra, dönüştürmek istediğiniz Google Harita linkini ilgili alana yapıştırın.
               </Text>
             </Box>
             <Box>
@@ -67,7 +121,7 @@ export default function Home() {
                 4. Excel&apos;e Dönüştürün
               </Heading>
               <Text fontSize="md" color="gray.300">
-                Tek bir tıklamayla linklerinizi Excel formatına çevirin.
+                Tek bir tıklamayla linkinizi anında Excel formatına çevirin.
               </Text>
             </Box>
             <Box>
@@ -75,7 +129,7 @@ export default function Home() {
                 5. İndirin
               </Heading>
               <Text fontSize="md" color="gray.300">
-                Oluşturulan Excel dosyasını kolayca indirin.
+                Oluşturulan Excel dosyasını kolayca bilgisayarınıza indirin.
               </Text>
             </Box>
           </Stack>

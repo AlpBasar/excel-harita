@@ -1,3 +1,4 @@
+// components/SignupModal.js
 import {
   Modal,
   ModalOverlay,
@@ -11,46 +12,70 @@ import {
   Input,
   Button,
   VStack,
-  HStack,
-  Divider,
-  Center,
-  Text,
+  useToast, // Toast bildirimi için
 } from '@chakra-ui/react';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebook, FaTwitter } from 'react-icons/fa';
-import { SiLinkedin, SiMessenger } from 'react-icons/si';
 import { useState } from 'react';
 
 const SignupModal = ({ isOpen, onClose }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState(''); // Ad için state
-  const [lastName, setLastName] = useState(''); // Soyad için state
-  const [username, setUsername] = useState(''); // Kullanıcı adı için state
+  const [confirmPassword, setConfirmPassword] = useState(''); // Şifre tekrarı için
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useToast();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
+
     if (password !== confirmPassword) {
-      alert('Şifreler eşleşmiyor!');
+      toast({
+        title: 'Hata',
+        description: 'Şifreler eşleşmiyor.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsLoading(false);
       return;
     }
-    // Kayıt işlemleri burada yapılacak (sosyal medya hariç)
-    console.log(
-      'Kaydolunuyor:',
-      firstName,
-      lastName,
-      username,
-      email,
-      password
-    );
-    onClose();
-  };
 
-  const handleSocialSignup = (provider) => {
-    // Sosyal medya ile kayıt işlemleri burada yapılacak
-    console.log(`${provider} ile kaydolunuyor`);
-    onClose();
+    try {
+      const response = await fetch('/api/auth/signup', { // Kayıt API rotamıza istek
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Kayıt Başarılı!',
+          description: data.message || 'Hesabınız başarıyla oluşturuldu. Şimdi giriş yapabilirsiniz.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        onClose(); // Kayıt başarılı olduktan sonra modalı kapat
+      } else {
+        // API'den gelen hata mesajını göster
+        throw new Error(data.message || 'Kayıt sırasında bir hata oluştu.');
+      }
+    } catch (error) {
+      toast({
+        title: 'Kayıt Hatası',
+        description: error.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      console.error('Kayıt İsteği Hatası:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -62,94 +87,24 @@ const SignupModal = ({ isOpen, onClose }) => {
         color="white"
         maxW="md"
       >
-        <ModalHeader>Kaydol</ModalHeader>
+        <ModalHeader>Yeni Hesap Oluştur</ModalHeader>
         <ModalCloseButton color="white" />
         <ModalBody>
-          <VStack spacing={4} mb={6}>
-            <HStack spacing={2} flexWrap="wrap">
-              {/* Facebook */}
-              <Button
-                w={{ base: 'full', sm: 'auto' }}
-                bg="#1877F2"
-                color="white"
-                leftIcon={<FaFacebook color="white" />}
-                onClick={() => handleSocialSignup('facebook')}
-                _hover={{ bg: '#1565d8' }}
-              >
-                <Center>
-                  <Text color="white">Facebook</Text>
-                </Center>
-              </Button>
-              {/* Google */}
-              <Button
-                w={{ base: 'full', sm: 'auto' }}
-                variant="outline"
-                bg="#fff"
-                color="#000"
-                leftIcon={<FcGoogle />}
-                onClick={() => handleSocialSignup('google')}
-                _hover={{ bg: '#f8f9fa' }}
-              >
-                <Center>
-                  <Text color="#000">Google</Text>
-                </Center>
-              </Button>
-              {/* LinkedIn */}
-              <Button
-                w={{ base: 'full', sm: 'auto' }}
-                bg="#0077B5"
-                color="white"
-                leftIcon={<SiLinkedin color="white" />}
-                onClick={() => handleSocialSignup('linkedin')}
-                _hover={{ bg: '#00649e' }}
-              >
-                <Center>
-                  <Text color="white">LinkedIn</Text>
-                </Center>
-              </Button>
-            </HStack>
-            <Divider borderColor="gray.700" />
-          </VStack>
           <VStack as="form" spacing={4} onSubmit={handleSubmit}>
-            <HStack spacing={2}>
-              <FormControl id="first-name" isRequired>
-                <FormLabel color="white">Ad</FormLabel>
-                <Input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  bg="gray.700"
-                  color="white"
-                  _placeholder={{ color: 'gray.400' }}
-                  borderColor="gray.600"
-                />
-              </FormControl>
-              <FormControl id="last-name" isRequired>
-                <FormLabel color="white">Soyad</FormLabel>
-                <Input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  bg="gray.700"
-                  color="white"
-                  _placeholder={{ color: 'gray.400' }}
-                  borderColor="gray.600"
-                />
-              </FormControl>
-            </HStack>
-            <FormControl id="username" isRequired>
-              <FormLabel color="white">Kullanıcı Adı</FormLabel>
+            <FormControl id="signup-name">
+              <FormLabel color="white">İsim (Opsiyonel)</FormLabel>
               <Input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 bg="gray.700"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 borderColor="gray.600"
+                focusBorderColor="teal.500"
               />
             </FormControl>
-            <FormControl id="email" isRequired>
+            <FormControl id="signup-email" isRequired> {/* isRequired eklendi */}
               <FormLabel color="white">E-posta Adresi</FormLabel>
               <Input
                 type="email"
@@ -159,22 +114,27 @@ const SignupModal = ({ isOpen, onClose }) => {
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 borderColor="gray.600"
+                focusBorderColor="teal.500"
+                isRequired // HTML5 doğrulaması için
               />
             </FormControl>
-            <FormControl id="password" isRequired>
+            <FormControl id="signup-password" isRequired> {/* isRequired eklendi */}
               <FormLabel color="white">Şifre</FormLabel>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="En az 6 karakter"
                 bg="gray.700"
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 borderColor="gray.600"
+                focusBorderColor="teal.500"
+                isRequired
               />
             </FormControl>
-            <FormControl id="confirm-password" isRequired>
-              <FormLabel color="white">Şifreyi Onayla</FormLabel>
+            <FormControl id="signup-confirm-password" isRequired> {/* isRequired eklendi */}
+              <FormLabel color="white">Şifreyi Tekrarla</FormLabel>
               <Input
                 type="password"
                 value={confirmPassword}
@@ -183,15 +143,17 @@ const SignupModal = ({ isOpen, onClose }) => {
                 color="white"
                 _placeholder={{ color: 'gray.400' }}
                 borderColor="gray.600"
+                focusBorderColor="teal.500"
+                isRequired
               />
             </FormControl>
-            <Button type="submit" colorScheme="teal" width="full">
-              Kaydol
+            <Button type="submit" colorScheme="green" width="full" isLoading={isLoading} loadingText="Kaydediliyor...">
+              Kayıt Ol
             </Button>
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" onClick={onClose} color="white">
+          <Button variant="ghost" onClick={onClose} color="white" _hover={{ bg: "gray.700" }}>
             İptal
           </Button>
         </ModalFooter>
